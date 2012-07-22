@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<project name="AutomatizacionInstalacionBPM" basedir="." default="printAllTargets" >
+	<property file="properties.properties"/>
+	<taskdef resource="net/sf/antcontrib/antcontrib.properties">
+		<classpath>
+			<pathelement location="${lib}/antcontrib.jar"/>
+		</classpath>
+	</taskdef>
+	<taskdef name="deployproc" classname="org.jbpm.ant.DeployProcessToServerTask">
+		<classpath>
+			<pathelement location="${lib}/jbpmU.jar"/>
+		</classpath>
+	</taskdef>
+
+	<!-- Read and output Directory names and Directory's files' path. -->
+
+	<target name="read">
+		<foreach target="read_dirs" param="dir">
+			<path>
+				<dirset dir="${process_directory}">
+					<include name="**/${process_name}"/>
+				</dirset>
+			</path>
+		</foreach>
+	</target>
+
+	<!-- Read and output file names in a directory. -->
+
+	<target name="read_dirs">
+		<basename property="dir_name" file="${dir}"/>
+		<echo message="${dir_name}"/>
+		<foreach target="read_files" param="File">
+			<path>
+				<fileset dir="${dir}"/>
+			</path>
+		</foreach>
+	</target>
+
+	<target name="read_files">
+		<echo message="${File}"/>
+	</target>
+
+	<!-- Build (zip) processes to PARs. -->
+
+	<target name="build">
+		<delete dir="${deploy_directory}"/>
+		<mkdir dir="${deploy_directory}"/>
+		<delete dir="${temp_directory}"/>
+		<foreach target="copy_files" param="dir">
+			<path>
+				<dirset dir="${process_directory}">
+					<include name="**/${process_name}"/>
+				</dirset>
+			</path>
+		</foreach>
+		<foreach target="build_dirs" param="dir">
+			<path>
+				<dirset dir="${temp_directory}">
+					<include name="**/${process_name}"/>
+				</dirset>
+			</path>
+		</foreach>
+		<delete dir="${temp_directory}"/>
+	</target>
+
+	<target name="copy_files">
+		<basename property="dir_name" file="${dir}"/>
+		<!--
+      Copies files to a temp directory
+      It will only copy files ending in *.jpdl.xml, *.jpdl.xml, metadata.xml, and *.jpg
+    -->
+		<copy todir="${temp_directory}/${dir_name}">
+			<fileset dir="${dir}">
+				<include name="**/*.jpdl.xml"/>
+				<include name="**/*.gpd.xml"/>
+				<include name="**/metadata.xml"/>
+				<include name="**/*.jpg"/>
+			</fileset>
+		</copy>
+		<!--
+      Renames files
+      It will rename files ending in *.jpdl.xml, *.jpdl.xml, metadata.xml, and *.jpg
+      to their respective names to be deployed as a PAR file.
+    -->
+		<move todir="${temp_directory}/${dir_name}">
+			<fileset dir="${temp_directory}/${dir_name}"/>
+			<mapper>
+				<mapper type="regexp" from="(.*)\.jpdl\.xml" to="${jpdl_name}"/>
+				<mapper type="regexp" from="(.*)\.gpd\.xml" to="${gpd_name}"/>
+				<mapper type="regexp" from="(.*)\.jpg" to="${image_name}"/>
+				<mapper type="regexp" from="metadata\.xml" to="${metadata_name}"/>
+			</mapper>
+		</move>
+	</target>
+
+	<!--
+      Zips all the filles in a directory and names it as a PAR file.
+    -->
+
+	<target name="build_dirs">
+		<basename property="dir_name" file="${dir}"/>
+		<zip destfile="${deploy_directory}/${dir_name}.${zip_extension}"
+       basedir="${dir}"
+       update="false" />
+	</target>
+
+	<!-- Starts the process of uploading all PARs in a directory to a server. -->
+
+	<target name="deploy">
+		<foreach target="deploy_process" param="file">
+			<path>
+				<fileset dir="${deploy_directory}"/>
+			</path>
+		</foreach>
+	</target>
+
+	<!-- Uploads a single ${file} PAR to a server. -->
+
+	<target name="deploy_process">
+		<echo message="Server: http://${server}:${port}${deployer}"/>
+		<deployproc process="${file}" serverName="${server}" serverPort="${port}" serverDeployer="${deployer}"/>
+	</target>
+
+	<!-- Install (Builds and Deploys) -->
+
+	<target name="install">
+		<antcall target="build"/>
+		<antcall target="deploy"/>
+		<delete dir="${deploy_directory}"/>
+	</target>
+
+	<!-- Print all the available targets -->
+	<target name="printAllTargets">
+		<echo>--------------------------------------------------------------</echo>
+		<echo>Available targets:</echo>
+		<echo>install		- Deploy all the process found in the source folder.</echo>
+		<echo>build		- ZIPs all the processes to the specified deployment folder.</echo>
+		<echo>deploy		- Uploads the PAR files found in the deployment folder.</echo>
+		<echo></echo>
+		<echo>Example of usage "ant install"</echo>
+		<echo>--------------------------------------------------------------</echo>
+		<echo>Version:	${version}</echo>
+	</target>
+	
+</project>
