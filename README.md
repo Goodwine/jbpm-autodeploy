@@ -71,5 +71,5 @@ What if I want to generate the PAR files without deploying them?
 
 Libraries used
 --------------
-* `DeployProcessToServerTask` -- Thanks to [Kurt Stam @ Fresh Expresso](kurtstam.blogspot.com)
+* `DeployProcessToServerTask` -- Thanks to [Kurt Stam @ Fresh Expresso](http://kurtstam.blogspot.com)
 * [Ant Contrib](http://ant-contrib.sourceforge.net/)
