@@ -21,7 +21,7 @@ There is a file in the root directory called `properties.properties`, update the
 
 ### ie:
 * `process_directory=~/projects/MyJBPMProject/processes`
-* `process_directory=C:\\projects\\MyJBPMProject\\processes`
+* `process_directory=C\:\\projects\\MyJBPMProject\\processes`
 
 Choose which processes to deploy
 --------------------------------
@@ -55,7 +55,7 @@ If you put JBPM AutoDeploy in Eclipse, you can do the following for the first ti
 
 For the next time, you will be able to:
 * Right Click `build.xml`
-* Run
+* Run As > Ant Build
 
 I already have a folder full of PAR files, What do?
 ---------------------------------------------------
